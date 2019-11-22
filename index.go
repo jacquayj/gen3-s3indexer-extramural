@@ -41,7 +41,7 @@ var indexS3ClientConfig = struct {
 	os.Getenv("UPLOADER"),
 }
 
-func invokeIndexS3Client(objectURL string, env []string) {
+func invokeIndexS3Client(env []string) {
 	if INDEXS3CLIENT_BIN == "" {
 		INDEXS3CLIENT_BIN = "./indexs3client"
 	}
@@ -97,7 +97,7 @@ func main() {
 				// Send job to workers
 				wg.Add(1)
 				jobs <- func() {
-					invokeIndexS3Client(objURL, settingsWithObj)
+					invokeIndexS3Client(settingsWithObj)
 					wg.Done()
 				}
 			}
