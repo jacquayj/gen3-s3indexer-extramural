@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -15,7 +16,7 @@ import (
 
 const (
 	NUM_WORKERS    = 5
-	JOB_QUEUE_SIZE = 500
+	JOB_QUEUE_SIZE = 1000
 )
 
 var (
@@ -56,10 +57,9 @@ func invokeIndexS3Client(objectURL string, env []string) {
 	cmd.Wait()
 }
 
-func worker(id int, jobs <-chan func(), done chan<- bool) {
+func worker(id int, jobs <-chan func()) {
 	for job := range jobs {
 		job()
-		done <- true
 	}
 }
 
@@ -80,15 +80,13 @@ func main() {
 	}
 
 	// Setup worker pool
-	done := make(chan bool, JOB_QUEUE_SIZE)
+	var wg sync.WaitGroup
 	jobs := make(chan func(), JOB_QUEUE_SIZE)
 	for w := 1; w <= NUM_WORKERS; w++ {
-		go worker(w, jobs, done)
+		go worker(w, jobs)
 	}
 
 	bucket := BUCKET
-
-	numObjs := 0
 	svc.ListObjectsV2Pages(
 		&s3.ListObjectsV2Input{Bucket: &bucket},
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
@@ -97,10 +95,11 @@ func main() {
 				settingsWithObj := append(indexSettings, fmt.Sprintf("INPUT_URL=%s", objURL))
 
 				// Send job to workers
+				wg.Add(1)
 				jobs <- func() {
 					invokeIndexS3Client(objURL, settingsWithObj)
+					wg.Done()
 				}
-				numObjs++
 			}
 			return true
 		},
@@ -108,8 +107,6 @@ func main() {
 	close(jobs) // No more jobs to create
 
 	// Drain the job queue
-	for a := 0; a < numObjs; a++ {
-		<-done
-	}
+	wg.Wait()
 
 }
