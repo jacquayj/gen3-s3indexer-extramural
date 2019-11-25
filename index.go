@@ -25,7 +25,7 @@ var (
 	INDEXS3CLIENT_BIN = os.Getenv("INDEXS3CLIENT_BIN")
 
 	AWS_BATCH_JOB_ARRAY_INDEX = os.Args[1]
-	AWS_BATCH_JOB_ARRAY_SIZE  = os.Getenv("AWS_BATCH_JOB_ARRAY_SIZE")
+	AWS_BATCH_JOB_ARRAY_SIZE  = os.Args[2]
 
 	INDEXD_URL      = os.Getenv("INDEXD_URL")
 	INDEXD_USER     = os.Getenv("INDEXD_USER")
@@ -70,6 +70,7 @@ func worker(id int, jobs <-chan func()) {
 }
 
 func main() {
+	fmt.Printf("Starting with os.Args: %v", os.Args)
 
 	defaults()
 

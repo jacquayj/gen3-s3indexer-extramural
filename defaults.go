@@ -60,7 +60,7 @@ func defaults() {
 	}
 	for _, val := range requiredBatch {
 		if strings.TrimSpace(val) == "" {
-			log.Fatal("batch config is required but not set")
+			log.Fatalf("batch config is required but not set %v", requiredBatch)
 		}
 	}
 	batchIndex, err = strconv.Atoi(AWS_BATCH_JOB_ARRAY_INDEX)
