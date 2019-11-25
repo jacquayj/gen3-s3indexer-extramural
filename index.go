@@ -70,7 +70,7 @@ func worker(id int, jobs <-chan func()) {
 }
 
 func main() {
-	fmt.Printf("Starting with os.Args: %v", os.Args)
+	log.Printf("Starting with os.Args: %v", os.Args)
 
 	defaults()
 
@@ -85,7 +85,7 @@ func main() {
 	config, _ := json.Marshal(indexS3ClientConfig)
 	indexSettings := []string{
 		fmt.Sprintf("AWS_REGION=%s", AWS_REGION),
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", AWS_SECRET_ACCESS_KEY),
+		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", AWS_ACCESS_KEY_ID),
 		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", AWS_SECRET_ACCESS_KEY),
 		fmt.Sprintf("CONFIG_FILE=%s", string(config)),
 	}
@@ -104,6 +104,8 @@ func main() {
 
 				objURL := fmt.Sprintf("s3://%s/%s", AWS_BUCKET, *obj.Key)
 				settingsWithObj := append(indexSettings, fmt.Sprintf("INPUT_URL=%s", objURL))
+
+				//log.Printf("Calling indexs3client %v with %v", objURL, settingsWithObj)
 
 				// Send job to workers
 				wg.Add(1)
