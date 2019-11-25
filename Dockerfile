@@ -13,7 +13,7 @@ RUN go install -tags netgo -ldflags '-extldflags "-static"' github.com/jacquayj/
 
 # Store only the resulting binary in the final image
 # Resulting in significantly smaller docker image size
-FROM scratch
+FROM busybox
 COPY --from=build-deps /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build-deps /bin/gen3-s3indexer-extramural /gen3-s3indexer-extramural
 COPY --from=build-deps /bin/indexs3client /indexs3client
