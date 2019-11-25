@@ -37,7 +37,7 @@ var indexS3ClientConfig = struct {
 	os.Getenv("INDEXD_USER"),
 	os.Getenv("INDEXD_PASS"),
 	true,
-	os.Getenv("UPLOADER"),
+	os.Getenv("INDEXD_UPLOADER"),
 	true,
 }
 
@@ -60,8 +60,6 @@ func worker(id int, jobs <-chan func()) {
 		job()
 	}
 }
-
-var numWorkers, jobQueueSize int
 
 func main() {
 

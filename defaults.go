@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
+
+var numWorkers, jobQueueSize int
 
 func defaults() {
 	if INDEXS3CLIENT_BIN == "" {
@@ -37,6 +40,18 @@ func defaults() {
 	for _, val := range required {
 		if strings.TrimSpace(val) == "" {
 			log.Fatal("AWS config is required but not set")
+		}
+	}
+
+	requiredIndexd := []string{
+		os.Getenv("INDEXD_URL"),
+		os.Getenv("INDEXD_USER"),
+		os.Getenv("INDEXD_PASS"),
+		os.Getenv("INDEXD_UPLOADER"),
+	}
+	for _, val := range requiredIndexd {
+		if strings.TrimSpace(val) == "" {
+			log.Fatal("indexd config is required but not set")
 		}
 	}
 
