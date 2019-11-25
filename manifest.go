@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"math"
 	"os"
 )
 
@@ -90,4 +91,40 @@ func getManifestNumLines(path string) (int, error) {
 	defer file.Close()
 
 	return lineCounter(file)
+}
+
+type BatchRun struct {
+	StartKey *string
+	EndKey   *string
+}
+
+func calculateStartEndKeys() BatchRun {
+	numTotalObjs, err := getManifestNumLines("/manifest.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	objsPerNode := int(math.Ceil(float64(numTotalObjs) / float64(batchSize)))
+
+	startLine := batchIndex * objsPerNode
+	endLine := (batchIndex + 1) * objsPerNode
+
+	if batchIndex == 0 {
+		return BatchRun{
+			nil,
+			getKeyAtLine("/manifest.txt", endLine),
+		}
+	}
+
+	if (batchIndex + 1) == batchSize {
+		return BatchRun{
+			getKeyAtLine("/manifest.txt", startLine),
+			nil,
+		}
+	}
+
+	key1, key2 := getKeyAtLine2("/manifest.txt", startLine, endLine)
+	return BatchRun{
+		key1,
+		key2,
+	}
 }

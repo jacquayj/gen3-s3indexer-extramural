@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -44,10 +43,10 @@ func defaults() {
 	}
 
 	requiredIndexd := []string{
-		os.Getenv("INDEXD_URL"),
-		os.Getenv("INDEXD_USER"),
-		os.Getenv("INDEXD_PASS"),
-		os.Getenv("INDEXD_UPLOADER"),
+		INDEXD_URL,
+		INDEXD_USER,
+		INDEXD_PASS,
+		INDEXD_UPLOADER,
 	}
 	for _, val := range requiredIndexd {
 		if strings.TrimSpace(val) == "" {

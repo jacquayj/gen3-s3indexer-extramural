@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"os/exec"
 	"sync"
@@ -27,6 +26,11 @@ var (
 
 	AWS_BATCH_JOB_ARRAY_INDEX = os.Getenv("AWS_BATCH_JOB_ARRAY_INDEX")
 	AWS_BATCH_JOB_ARRAY_SIZE  = os.Getenv("AWS_BATCH_JOB_ARRAY_SIZE")
+
+	INDEXD_URL      = os.Getenv("INDEXD_URL")
+	INDEXD_USER     = os.Getenv("INDEXD_USER")
+	INDEXD_PASS     = os.Getenv("INDEXD_PASS")
+	INDEXD_UPLOADER = os.Getenv("INDEXD_UPLOADER")
 )
 
 var indexS3ClientConfig = struct {
@@ -37,11 +41,11 @@ var indexS3ClientConfig = struct {
 	ExtramuralUploader    string `json:"extramural_uploader"`
 	ExtramuralInitialMode bool   `json:"extramural_initial_mode"`
 }{
-	os.Getenv("INDEXD_URL"),
-	os.Getenv("INDEXD_USER"),
-	os.Getenv("INDEXD_PASS"),
+	INDEXD_URL,
+	INDEXD_USER,
+	INDEXD_PASS,
 	true,
-	os.Getenv("INDEXD_UPLOADER"),
+	INDEXD_UPLOADER,
 	true,
 }
 
@@ -62,42 +66,6 @@ var wg sync.WaitGroup
 func worker(id int, jobs <-chan func()) {
 	for job := range jobs {
 		job()
-	}
-}
-
-type BatchRun struct {
-	StartKey *string
-	EndKey   *string
-}
-
-func calculateStartEndKeys() BatchRun {
-	numTotalObjs, err := getManifestNumLines("/manifest.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	objsPerNode := int(math.Ceil(float64(numTotalObjs) / float64(batchSize)))
-
-	startLine := batchIndex * objsPerNode
-	endLine := (batchIndex + 1) * objsPerNode
-
-	if batchIndex == 0 {
-		return BatchRun{
-			nil,
-			getKeyAtLine("/manifest.txt", endLine),
-		}
-	}
-
-	if (batchIndex + 1) == batchSize {
-		return BatchRun{
-			getKeyAtLine("/manifest.txt", startLine),
-			nil,
-		}
-	}
-
-	key1, key2 := getKeyAtLine2("/manifest.txt", startLine, endLine)
-	return BatchRun{
-		key1,
-		key2,
 	}
 }
 
