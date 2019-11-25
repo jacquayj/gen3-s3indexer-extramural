@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"sort"
 )
 
 const chunkSize = 1024 * 1024 * 64
@@ -53,25 +54,27 @@ func getKeyAtLine(path string, targetLine int) *string {
 	return nil
 }
 
-func getKeyAtLine2(path string, targetLine, targetLine2 int) (*string, *string) {
+func getKeysAtLines(path string, targetLines []int) []*string {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
-	var first *string
+	sort.Ints(targetLines)
+
+	keys := make([]*string, 0, 100)
+
 	line := 1
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		key := scanner.Text()
-		if targetLine == line {
-			first = &key
-		} else {
-			if targetLine2 == line {
-				last := &key
-				return first, last
+		if targetLines[0] == line {
+			keys = append(keys, &key)
+			if len(targetLines) == 1 {
+				return keys
 			}
+			targetLines = targetLines[1:]
 		}
 		line++
 	}
@@ -80,7 +83,7 @@ func getKeyAtLine2(path string, targetLine, targetLine2 int) (*string, *string) 
 		log.Fatal(err)
 	}
 
-	return nil, nil
+	return keys
 }
 
 func getManifestNumLines(path string) (int, error) {
@@ -122,9 +125,9 @@ func calculateStartEndKeys() BatchRun {
 		}
 	}
 
-	key1, key2 := getKeyAtLine2("/manifest.txt", startLine, endLine)
+	keys := getKeysAtLines("/manifest.txt", []int{startLine, endLine})
 	return BatchRun{
-		key1,
-		key2,
+		keys[0],
+		keys[1],
 	}
 }
