@@ -18,6 +18,5 @@ COPY --from=build-deps /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build-deps /bin/gen3-s3indexer-extramural /gen3-s3indexer-extramural
 COPY --from=build-deps /bin/indexs3client /indexs3client
 COPY --from=build-deps /src/github.com/jacquayj/gen3-s3indexer-extramural/manifest.txt /manifest.txt
-COPY --from=build-deps /src/github.com/jacquayj/gen3-s3indexer-extramural/entry.sh /entry.sh
 
-ENTRYPOINT /entry.sh
+ENTRYPOINT /gen3-s3indexer-extramural
