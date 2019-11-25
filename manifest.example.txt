@@ -1,0 +1,3 @@
+MDT/Data/HybridomaSeq/Box9hmm/3_ByBarcode/LC__LC_G08.fastq
+MDT/Data/HybridomaSeq/Box9hmm/3_ByBarcode/LC__LC_G10.fastq
+MDT/Data/HybridomaSeq/Box9hmm/3_ByBarcode/LC__LC_H02.fastq
