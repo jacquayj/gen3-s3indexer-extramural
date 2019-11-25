@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var numWorkers, jobQueueSize int
+var numWorkers, jobQueueSize, batchIndex, batchSize int
 
 func defaults() {
 	if INDEXS3CLIENT_BIN == "" {
@@ -53,6 +53,24 @@ func defaults() {
 		if strings.TrimSpace(val) == "" {
 			log.Fatal("indexd config is required but not set")
 		}
+	}
+
+	requiredBatch := []string{
+		AWS_BATCH_JOB_ARRAY_INDEX,
+		AWS_BATCH_JOB_ARRAY_SIZE,
+	}
+	for _, val := range requiredBatch {
+		if strings.TrimSpace(val) == "" {
+			log.Fatal("batch config is required but not set")
+		}
+	}
+	batchIndex, err = strconv.Atoi(AWS_BATCH_JOB_ARRAY_INDEX)
+	if err != nil {
+		log.Fatal(err)
+	}
+	batchSize, err = strconv.Atoi(AWS_BATCH_JOB_ARRAY_SIZE)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"sync"
@@ -23,6 +24,9 @@ var (
 	NUM_WORKERS       = os.Getenv("NUM_WORKERS")
 	JOB_QUEUE_SIZE    = os.Getenv("JOB_QUEUE_SIZE")
 	INDEXS3CLIENT_BIN = os.Getenv("INDEXS3CLIENT_BIN")
+
+	AWS_BATCH_JOB_ARRAY_INDEX = os.Getenv("AWS_BATCH_JOB_ARRAY_INDEX")
+	AWS_BATCH_JOB_ARRAY_SIZE  = os.Getenv("AWS_BATCH_JOB_ARRAY_SIZE")
 )
 
 var indexS3ClientConfig = struct {
@@ -61,9 +65,47 @@ func worker(id int, jobs <-chan func()) {
 	}
 }
 
+type BatchRun struct {
+	StartKey *string
+	EndKey   *string
+}
+
+func calculateStartEndKeys() BatchRun {
+	numTotalObjs, err := getManifestNumLines("/manifest.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	objsPerNode := int(math.Ceil(float64(numTotalObjs) / float64(batchSize)))
+
+	startLine := batchIndex * objsPerNode
+	endLine := (batchIndex + 1) * objsPerNode
+
+	if batchIndex == 0 {
+		return BatchRun{
+			nil,
+			getKeyAtLine("/manifest.txt", endLine),
+		}
+	}
+
+	if (batchIndex + 1) == batchSize {
+		return BatchRun{
+			getKeyAtLine("/manifest.txt", startLine),
+			nil,
+		}
+	}
+
+	key1, key2 := getKeyAtLine2("/manifest.txt", startLine, endLine)
+	return BatchRun{
+		key1,
+		key2,
+	}
+}
+
 func main() {
 
 	defaults()
+
+	startEndKeys := calculateStartEndKeys()
 
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess, &aws.Config{
@@ -87,9 +129,10 @@ func main() {
 
 	bucket := AWS_BUCKET
 	svc.ListObjectsV2Pages(
-		&s3.ListObjectsV2Input{Bucket: &bucket},
+		&s3.ListObjectsV2Input{Bucket: &bucket, StartAfter: startEndKeys.StartKey},
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, obj := range page.Contents {
+
 				objURL := fmt.Sprintf("s3://%s/%s", AWS_BUCKET, *obj.Key)
 				settingsWithObj := append(indexSettings, fmt.Sprintf("INPUT_URL=%s", objURL))
 
@@ -98,6 +141,13 @@ func main() {
 				jobs <- func() {
 					invokeIndexS3Client(settingsWithObj)
 					wg.Done()
+				}
+
+				// Stop processing
+				if startEndKeys.EndKey != nil {
+					if *obj.Key == *startEndKeys.EndKey {
+						return false
+					}
 				}
 			}
 			return true
