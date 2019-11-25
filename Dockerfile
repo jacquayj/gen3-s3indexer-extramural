@@ -19,4 +19,4 @@ COPY --from=build-deps /bin/gen3-s3indexer-extramural /gen3-s3indexer-extramural
 COPY --from=build-deps /bin/indexs3client /indexs3client
 COPY --from=build-deps /src/github.com/jacquayj/gen3-s3indexer-extramural/manifest.txt /manifest.txt
 
-ENTRYPOINT /gen3-s3indexer-extramural
+CMD /gen3-s3indexer-extramural
