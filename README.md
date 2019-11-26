@@ -5,7 +5,7 @@ Indexes S3 data for Gen3's `indexd` microservice, fast. You're going to need a b
 ## Todo
 
 * Move secrets from environment vars to AWS secret store
-* Embedded indexs3client (no shelling out)
+* New smaller manifest format
 * Embedded manifest generator with regex support
 * Object key prefix support
 * Regex logic for object skipping (for patterns unsupported by s3 prefix filter, use with manifest generator) 
