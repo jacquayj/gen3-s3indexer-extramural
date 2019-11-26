@@ -1,8 +1,17 @@
 # gen3-s3indexer-extramural
 
-Indexes S3 data, even if the data existed before S3 events were configured for ssjdispatcher.
+Indexes S3 data for Gen3's `indexd` microservice, fast. You're going to need a bigger RDS instance.
 
-## Usage
+## Todo
+
+* Move secrets from environment vars to AWS secret store
+* Embedded indexs3client (no shelling out)
+* Embedded manifest generator with regex support
+* Object key prefix support
+* Regex logic for object skipping (for patterns unsupported by s3 prefix filter, use with manifest generator) 
+
+
+## AWS Batch Usage
 
 ```
 {
