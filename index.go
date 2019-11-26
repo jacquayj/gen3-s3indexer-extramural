@@ -1,17 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/jacquayj/indexs3client/handlers"
 )
 
 var (
@@ -33,32 +32,26 @@ var (
 	INDEXD_UPLOADER = os.Getenv("INDEXD_UPLOADER")
 )
 
-var indexS3ClientConfig = struct {
-	URL                   string `json:"url"`
-	Username              string `json:"username"`
-	Password              string `json:"password"`
-	ExtramuralBucket      bool   `json:"extramural_bucket"`
-	ExtramuralUploader    string `json:"extramural_uploader"`
-	ExtramuralInitialMode bool   `json:"extramural_initial_mode"`
-}{
-	INDEXD_URL,
-	INDEXD_USER,
-	INDEXD_PASS,
-	true,
-	INDEXD_UPLOADER,
-	true,
+var indexS3ClientConfig = handlers.IndexdInfo{
+	URL:                   INDEXD_URL,
+	Username:              INDEXD_USER,
+	Password:              INDEXD_PASS,
+	ExtramuralBucket:      true,
+	ExtramuralUploader:    &INDEXD_UPLOADER,
+	ExtramuralInitialMode: true,
 }
 
-func invokeIndexS3Client(env []string) {
-	cmd := exec.Command(INDEXS3CLIENT_BIN)
-	cmd.Env = env
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Start()
+func invokeIndexS3Client(objURL string) {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(AWS_REGION),
+		Credentials: credentials.NewStaticCredentials(
+			AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ""),
+	})
 	if err != nil {
-		log.Print(err)
+		log.Fatal(err)
 	}
-	cmd.Wait()
+
+	handlers.IndexS3ObjectEmbedded(objURL, &indexS3ClientConfig, sess)
 }
 
 var wg sync.WaitGroup
@@ -82,14 +75,6 @@ func main() {
 		Credentials: credentials.NewStaticCredentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ""),
 	})
 
-	config, _ := json.Marshal(indexS3ClientConfig)
-	indexSettings := []string{
-		fmt.Sprintf("AWS_REGION=%s", AWS_REGION),
-		fmt.Sprintf("AWS_ACCESS_KEY_ID=%s", AWS_ACCESS_KEY_ID),
-		fmt.Sprintf("AWS_SECRET_ACCESS_KEY=%s", AWS_SECRET_ACCESS_KEY),
-		fmt.Sprintf("CONFIG_FILE=%s", string(config)),
-	}
-
 	// Setup worker pool
 	jobs := make(chan func(), jobQueueSize)
 	for w := 1; w <= numWorkers; w++ {
@@ -103,14 +88,11 @@ func main() {
 			for _, obj := range page.Contents {
 
 				objURL := fmt.Sprintf("s3://%s/%s", AWS_BUCKET, *obj.Key)
-				settingsWithObj := append(indexSettings, fmt.Sprintf("INPUT_URL=%s", objURL))
-
-				//log.Printf("Calling indexs3client %v with %v", objURL, settingsWithObj)
 
 				// Send job to workers
 				wg.Add(1)
 				jobs <- func() {
-					invokeIndexS3Client(settingsWithObj)
+					invokeIndexS3Client(objURL)
 					wg.Done()
 				}
 
