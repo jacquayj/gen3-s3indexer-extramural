@@ -10,6 +10,43 @@ Indexes S3 data for Gen3's `indexd` microservice, fast. You're going to need a b
 * Object key prefix support
 * Regex logic for object skipping (for patterns unsupported by s3 prefix filter, use with manifest generator) 
 
+## Usage (future)
+
+First you need to generate a manifest containing the following example info used for job submissions:
+```javascript
+{
+   "jobs": [
+      {"start_key": null, "end_key": "my/object/end.txt"},
+      {"start_key": "my/object/end.txt", "end_key": "another/object/end2.txt"},
+      {"start_key": "another/object/end2.txt", "end_key": null}
+   ]
+}
+```
+
+Download the tool used to generate this manifest file.
+```sh
+$ docker pull jacquayj/gen3-s3indexer-manifest
+```
+
+Clone this repo, the manifest you generate needs to be inside the `gen3-s3indexer-extramural` directory.
+```
+$ git clone https://github.com/jacquayj/gen3-s3indexer-extramural.git
+$ cd gen3-s3indexer-extramural
+```
+
+Generate the `manifest.json` file: Pass in the desired `--batch-size`, `--bucket`, and any prefixes or regex filters.
+```
+$ docker run jacquayj/gen3-s3indexer-manifest generate \
+  --batch-size=25 \
+  --bucket=mybucket \
+  --prefix="prefix/" \
+  --filter="prefix/[A-Z]+/test.txt" > manifest.json
+```
+
+Then build the job container, including the `manifest.json` you generated in previous steps (should exist in same directory).
+```
+$ docker build -t my-batch-container .
+```
 
 ## AWS Batch Usage
 
