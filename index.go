@@ -42,16 +42,11 @@ var indexS3ClientConfig = handlers.IndexdInfo{
 }
 
 func invokeIndexS3Client(objURL string) {
-	sess, err := session.NewSession(&aws.Config{
+	handlers.IndexS3ObjectEmbedded(objURL, &indexS3ClientConfig, &aws.Config{
 		Region: aws.String(AWS_REGION),
 		Credentials: credentials.NewStaticCredentials(
 			AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, ""),
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	handlers.IndexS3ObjectEmbedded(objURL, &indexS3ClientConfig, sess)
 }
 
 var wg sync.WaitGroup
