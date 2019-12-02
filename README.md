@@ -36,7 +36,8 @@ $ cd gen3-s3indexer-extramural
 
 Generate the `manifest.json` file: Pass in the desired `--batch-size`, `--bucket`, and any prefixes or regex filters.
 ```
-$ docker run jacquayj/gen3-s3indexer-manifest generate \
+$ docker pull jacquayj/gen3-s3indexer-manifest
+$ docker run jacquayj/gen3-s3indexer-manifest \
   --batch-size=25 \
   --bucket=mybucket \
   --prefix="prefix/" \
