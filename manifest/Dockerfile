@@ -12,4 +12,4 @@ FROM busybox
 
 COPY --from=build-deps /build/manifest /manifest
 
-CMD /manifest
+ENTRYPOINT [ "/manifest" ] 
