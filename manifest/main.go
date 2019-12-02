@@ -80,10 +80,13 @@ func main() {
 
 	resp := Jobs{}
 
-	// Could make this faster by batching all calls to single getKeysAtLines
+	// Only calculate the lines to fetch from manifest file
 	for i := 0; i < opts.BatchSize; i++ {
-		resp.BatchRuns = append(resp.BatchRuns, calculateStartEndKeys(i, opts.BatchSize))
+		resp.RawBatchRuns = append(resp.RawBatchRuns, calculateStartEndKeys(i, opts.BatchSize))
 	}
+
+	// Fetch the lines in one manifest loop
+	resolveBatchRuns(&resp)
 
 	manifestJSON, err := json.MarshalIndent(resp, "", "\t")
 	if err != nil {

@@ -18,7 +18,8 @@ type BatchRun struct {
 }
 
 type Jobs struct {
-	BatchRuns []BatchRun `json:"jobs"`
+	BatchRuns    []BatchRun    `json:"jobs"`
+	RawBatchRuns []BatchRunRaw `json:"-"`
 }
 
 func lineCounter(r io.Reader) (int, error) {
@@ -37,30 +38,6 @@ func lineCounter(r io.Reader) (int, error) {
 			return count, err
 		}
 	}
-}
-
-func getKeyAtLine(path string, targetLine int) *string {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	line := 1
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if targetLine == line {
-			key := scanner.Text()
-			return &key
-		}
-		line++
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
 }
 
 func getKeysAtLines(path string, targetLines []int) []*string {
@@ -108,7 +85,60 @@ func getManifestNumLines(path string) (int, error) {
 var numTotalObjs = -1
 var objsPerNode = -1
 
-func calculateStartEndKeys(batchSize, batchIndex int) BatchRun {
+type BatchRunRaw struct {
+	StartKeyLine *int
+	EndKeyLine   *int
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func resolveBatchRuns(resp *Jobs) {
+	// Get list of lines to fetch keys from, with no duplicates
+	lines := make([]int, 0, len(resp.RawBatchRuns)*2) // Upto 2 lines per batch run
+	for _, rbr := range resp.RawBatchRuns {
+		if rbr.StartKeyLine != nil && !contains(lines, *rbr.StartKeyLine) {
+			lines = append(lines, *rbr.StartKeyLine)
+		}
+		if rbr.EndKeyLine != nil && !contains(lines, *rbr.EndKeyLine) {
+			lines = append(lines, *rbr.EndKeyLine)
+		}
+	}
+
+	// Create map for line/key lookups
+	lineMap := make(map[int]*string)
+	keys := getKeysAtLines(MANIFEST_FILE, lines)
+	if len(keys) != len(lines) {
+		panic("Num keys doesn't match number of lines")
+	}
+	for i := 0; i < len(keys); i++ {
+		lineMap[lines[i]] = keys[i]
+	}
+
+	// Set the start and end keys
+	resp.BatchRuns = make([]BatchRun, len(resp.RawBatchRuns))
+	for i, rbr := range resp.RawBatchRuns {
+		br := BatchRun{}
+
+		if rbr.StartKeyLine != nil {
+			br.StartKey = lineMap[*rbr.StartKeyLine]
+		}
+		if rbr.EndKeyLine != nil {
+			br.EndKey = lineMap[*rbr.EndKeyLine]
+		}
+
+		resp.BatchRuns[i] = br
+	}
+
+}
+
+func calculateStartEndKeys(batchSize, batchIndex int) BatchRunRaw {
 	if numTotalObjs == -1 {
 		if numTotalObj, err := getManifestNumLines(MANIFEST_FILE); err == nil {
 			numTotalObjs = numTotalObj
@@ -122,22 +152,21 @@ func calculateStartEndKeys(batchSize, batchIndex int) BatchRun {
 	endLine := (batchIndex + 1) * objsPerNode
 
 	if batchIndex == 0 {
-		return BatchRun{
+		return BatchRunRaw{
 			nil,
-			getKeyAtLine(MANIFEST_FILE, endLine),
+			&endLine,
 		}
 	}
 
 	if (batchIndex + 1) == batchSize {
-		return BatchRun{
-			getKeyAtLine(MANIFEST_FILE, startLine),
+		return BatchRunRaw{
+			&startLine,
 			nil,
 		}
 	}
 
-	keys := getKeysAtLines(MANIFEST_FILE, []int{startLine, endLine})
-	return BatchRun{
-		keys[0],
-		keys[1],
+	return BatchRunRaw{
+		&startLine,
+		&endLine,
 	}
 }
