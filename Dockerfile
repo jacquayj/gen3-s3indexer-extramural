@@ -5,7 +5,7 @@ RUN mkdir -p /build
 WORKDIR /build
 ADD . .
 
-RUN go build -tags netgo -ldflags '-extldflags "-static"' .
+RUN go build -o gen3-s3indexer-extramural -tags netgo -ldflags '-extldflags "-static"' .
 
 # Store only the resulting binary in the final image
 # Resulting in significantly smaller docker image size

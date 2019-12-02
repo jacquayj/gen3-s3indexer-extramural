@@ -19,9 +19,8 @@ var (
 	AWS_REGION            = os.Getenv("AWS_REGION")
 	AWS_BUCKET            = os.Getenv("AWS_BUCKET")
 
-	NUM_WORKERS       = os.Getenv("NUM_WORKERS")
-	JOB_QUEUE_SIZE    = os.Getenv("JOB_QUEUE_SIZE")
-	INDEXS3CLIENT_BIN = os.Getenv("INDEXS3CLIENT_BIN")
+	NUM_WORKERS    = os.Getenv("NUM_WORKERS")
+	JOB_QUEUE_SIZE = os.Getenv("JOB_QUEUE_SIZE")
 
 	AWS_BATCH_JOB_ARRAY_INDEX = os.Args[1]
 	AWS_BATCH_JOB_ARRAY_SIZE  = os.Args[2]
