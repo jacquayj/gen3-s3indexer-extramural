@@ -15,11 +15,25 @@ Indexes S3 data for Gen3's `indexd` microservice, fast. You're going to need a b
 First you need to generate a manifest containing the following example info used for job submissions:
 ```javascript
 {
-   "jobs": [
-      {"start_key": null, "end_key": "my/object/end.txt"},
-      {"start_key": "my/object/end.txt", "end_key": "another/object/end2.txt"},
-      {"start_key": "another/object/end2.txt", "end_key": null}
-   ]
+        "jobs": [
+                {
+                        "start_key": null,
+                        "end_key": "dg.XXXX/2525cfe8-d233-4d0c-9601-0b69d222b2a5/clinical.json"
+                },
+                {
+                        "start_key": "dg.XXXX/2525cfe8-d233-4d0c-9601-0b69d222b2a5/clinical.json",
+                        "end_key": "dg.XXXX/8a097d37-e4c0-49a2-b433-728521a8cd2a/output.tsv"
+                },
+                {
+                        "start_key": "dg.XXXX/8a097d37-e4c0-49a2-b433-728521a8cd2a/output.tsv",
+                        "end_key": null
+                }
+        ],
+        "opts": {
+                "regexs": null,
+                "prefix": "dg.XXXX",
+                "batch_size": 3
+        }
 }
 ```
 
@@ -34,12 +48,21 @@ $ git clone https://github.com/jacquayj/gen3-s3indexer-extramural.git
 $ cd gen3-s3indexer-extramural
 ```
 
-Generate the `manifest.json` file: Pass in the desired `--batch-size`, `--bucket`, and any prefixes or regex filters.
+Generate the `manifest.json` file: 
+
+1. Save the ENV file `.env` containg your configuration:
 ```
-$ docker pull jacquayj/gen3-s3indexer-manifest
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+AWS_BUCKET=
+```
+
+2. Pass in the desired `--batch-size`, and any prefixes (`--prefix`) or regex filters (`--regex`).
+
+```
 $ docker run jacquayj/gen3-s3indexer-manifest \
-  --batch-size=25 \
-  --bucket=mybucket \
+  --batch-size=10 \
   --prefix="prefix/" \
   --filter="prefix/[A-Z]+/test.txt" > manifest.json
 ```
