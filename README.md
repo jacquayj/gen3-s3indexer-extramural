@@ -29,7 +29,8 @@ First you need to generate a manifest containing the following example info used
                 "regexs": null,
                 "prefix": "dg.XXXX",
                 "batch_size": 3
-        }
+        },
+        "obj_count": 41
 }
 ```
 
