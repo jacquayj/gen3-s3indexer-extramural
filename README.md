@@ -5,12 +5,8 @@ Indexes S3 data for Gen3's `indexd` microservice, fast. You're going to need a b
 ## Todo
 
 * Move secrets from environment vars to AWS secret store
-* New smaller manifest format
-* Embedded manifest generator with regex support
-* Object key prefix support
-* Regex logic for object skipping (for patterns unsupported by s3 prefix filter, use with manifest generator) 
 
-## Usage (future)
+## Usage
 
 First you need to generate a manifest containing the following example info used for job submissions:
 ```javascript
@@ -61,10 +57,9 @@ AWS_BUCKET=
 2. Pass in the desired `--batch-size`, and any prefixes (`--prefix`) or regex filters (`--regex`).
 
 ```
-$ docker run jacquayj/gen3-s3indexer-manifest \
-  --batch-size=10 \
-  --prefix="prefix/" \
-  --filter="prefix/[A-Z]+/test.txt" > manifest.json
+$ docker run --env-file=.env jacquayj/gen3-s3indexer-manifest \
+  --batch-size=3 \
+  --prefix="dg.XXXX" > manifest.json
 ```
 
 Then build the job container, including the `manifest.json` you generated in previous steps (should exist in same directory).
