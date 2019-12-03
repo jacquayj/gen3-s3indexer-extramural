@@ -36,6 +36,20 @@ First you need to generate a manifest containing the following example info used
 Download the tool used to generate this manifest file.
 ```sh
 $ docker pull jacquayj/gen3-s3indexer-manifest
+$ docker run jacquayj/gen3-s3indexer-manifest -h
+Usage:
+  manifest [OPTIONS]
+
+Application Options:
+  -r, --regex=      Object keys must match this or be skipped, multiple
+                    expressions can be specified
+  -p, --prefix=     Limits the response to keys that begin with the specified
+                    prefix
+  -s, --batch-size= Batch cluster size (default: 10)
+
+Help Options:
+  -h, --help        Show this help message
+
 ```
 
 Clone this repo, the manifest you generate needs to be inside the `gen3-s3indexer-extramural` directory.
@@ -46,7 +60,7 @@ $ cd gen3-s3indexer-extramural
 
 Generate the `manifest.json` file: 
 
-1. Save the ENV file `.env` containg your configuration:
+1. Save ENV file `.env` containing your AWS S3 configuration, see `.env.example` as reference:
 ```
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
@@ -54,7 +68,7 @@ AWS_REGION=us-east-1
 AWS_BUCKET=
 ```
 
-2. Pass in the desired `--batch-size`, and any prefixes (`--prefix`) or regex filters (`--regex`).
+2. Pass in the desired `--batch-size`, and any prefixes (`--prefix`) or regex filters (`--regex`). Also specify the `.env` file you created.
 
 ```
 $ docker run --env-file=.env jacquayj/gen3-s3indexer-manifest \
@@ -64,7 +78,8 @@ $ docker run --env-file=.env jacquayj/gen3-s3indexer-manifest \
 
 Then build the job container, including the `manifest.json` you generated in previous steps (should exist in same directory).
 ```
-$ docker build -t my-batch-container .
+$ docker build -t username/my-batch-container .
+$ docker push username/my-batch-container
 ```
 
 ## AWS Batch Usage
@@ -78,13 +93,13 @@ $ docker build -t my-batch-container .
     "type": "container",
     "parameters": {},
     "containerProperties": {
-        "image": "index.docker.io/jacquayj/gen3-s3indexer-extramural:1.0.1",
+        "image": "index.docker.io/username/my-batch-container:latest,
         "vcpus": 4,
         "memory": 4000,
         "command": [
             "/bin/sh",
             "-c",
-            "/gen3-s3indexer-extramural $AWS_BATCH_JOB_ARRAY_INDEX 50"
+            "/gen3-s3indexer-extramural $AWS_BATCH_JOB_ARRAY_INDEX"
         ],
         "volumes": [],
         "environment": [

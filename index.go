@@ -30,7 +30,6 @@ var (
 	JOB_QUEUE_SIZE = os.Getenv("JOB_QUEUE_SIZE")
 
 	AWS_BATCH_JOB_ARRAY_INDEX = os.Args[1]
-	AWS_BATCH_JOB_ARRAY_SIZE  = -1
 
 	INDEXD_URL      = os.Getenv("INDEXD_URL")
 	INDEXD_USER     = os.Getenv("INDEXD_USER")
@@ -68,6 +67,7 @@ func main() {
 
 	defaults()
 
+	// Parse manifest.json file to get startEndKeys
 	manifestB, err := ioutil.ReadFile(MANIFEST_FILE)
 	if err != nil {
 		log.Fatal(err)
@@ -76,8 +76,6 @@ func main() {
 	if err := json.Unmarshal(manifestB, &batchJobs); err != nil {
 		log.Fatal(err)
 	}
-
-	AWS_BATCH_JOB_ARRAY_SIZE = batchJobs.Opts.BatchSize
 
 	startEndKeys := batchJobs.BatchRuns[batchIndex]
 
