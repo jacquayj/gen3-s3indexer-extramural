@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -10,7 +12,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/jacquayj/gen3-s3indexer-extramural/common"
 	"github.com/jacquayj/indexs3client/handlers"
+)
+
+const (
+	MANIFEST_FILE = "/manifest.json"
 )
 
 var (
@@ -23,7 +30,7 @@ var (
 	JOB_QUEUE_SIZE = os.Getenv("JOB_QUEUE_SIZE")
 
 	AWS_BATCH_JOB_ARRAY_INDEX = os.Args[1]
-	AWS_BATCH_JOB_ARRAY_SIZE  = os.Args[2]
+	AWS_BATCH_JOB_ARRAY_SIZE  = -1
 
 	INDEXD_URL      = os.Getenv("INDEXD_URL")
 	INDEXD_USER     = os.Getenv("INDEXD_USER")
@@ -61,7 +68,18 @@ func main() {
 
 	defaults()
 
-	startEndKeys := calculateStartEndKeys()
+	manifestB, err := ioutil.ReadFile(MANIFEST_FILE)
+	if err != nil {
+		log.Fatal(err)
+	}
+	batchJobs := common.Jobs{}
+	if err := json.Unmarshal(manifestB, &batchJobs); err != nil {
+		log.Fatal(err)
+	}
+
+	AWS_BATCH_JOB_ARRAY_SIZE = batchJobs.Opts.BatchSize
+
+	startEndKeys := batchJobs.BatchRuns[batchIndex]
 
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess, &aws.Config{

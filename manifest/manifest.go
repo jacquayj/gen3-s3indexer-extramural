@@ -8,19 +8,22 @@ import (
 	"math"
 	"os"
 	"sort"
+
+	"github.com/jacquayj/gen3-s3indexer-extramural/common"
 )
 
 const chunkSize = 1024 * 1024 * 64
 
-type BatchRun struct {
-	StartKey *string `json:"start_key"`
-	EndKey   *string `json:"end_key"`
-}
+var numTotalObjs = -1
+var objsPerNode = -1
 
-type Jobs struct {
-	BatchRuns    []BatchRun    `json:"jobs"`
-	RawBatchRuns []BatchRunRaw `json:"-"`
-	Opts         ManifestOpts  `json:"opts"`
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func lineCounter(r io.Reader) (int, error) {
@@ -83,24 +86,7 @@ func getManifestNumLines(path string) (int, error) {
 	return lineCounter(file)
 }
 
-var numTotalObjs = -1
-var objsPerNode = -1
-
-type BatchRunRaw struct {
-	StartKeyLine *int
-	EndKeyLine   *int
-}
-
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func resolveBatchRuns(resp *Jobs) {
+func resolveBatchRuns(resp *common.Jobs) {
 	// Get list of lines to fetch keys from, with no duplicates
 	lines := make([]int, 0, len(resp.RawBatchRuns)*2) // Upto 2 lines per batch run
 	for _, rbr := range resp.RawBatchRuns {
@@ -123,7 +109,7 @@ func resolveBatchRuns(resp *Jobs) {
 	}
 
 	// Set the start and end keys
-	resp.BatchRuns = make([]BatchRun, len(resp.RawBatchRuns))
+	resp.BatchRuns = make([]common.BatchRun, len(resp.RawBatchRuns))
 	for i, rbr := range resp.RawBatchRuns {
 		br := BatchRun{}
 
@@ -153,20 +139,20 @@ func calculateStartEndKeys(batchSize, batchIndex int) BatchRunRaw {
 	endLine := (batchIndex + 1) * objsPerNode
 
 	if batchIndex == 0 {
-		return BatchRunRaw{
+		return common.BatchRunRaw{
 			nil,
 			&endLine,
 		}
 	}
 
 	if (batchIndex + 1) == batchSize {
-		return BatchRunRaw{
+		return common.BatchRunRaw{
 			&startLine,
 			nil,
 		}
 	}
 
-	return BatchRunRaw{
+	return common.BatchRunRaw{
 		&startLine,
 		&endLine,
 	}

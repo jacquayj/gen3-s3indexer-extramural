@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/jacquayj/gen3-s3indexer-extramural/common"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -22,13 +23,7 @@ var (
 	AWS_BUCKET            = os.Getenv("AWS_BUCKET")
 )
 
-type ManifestOpts struct {
-	Regexs    []string `short:"r" long:"regex" description:"Object keys must match this or be skipped, multiple expressions can be specified" json:"regexs"`
-	Prefix    *string  `short:"p" long:"prefix" description:"Limits the response to keys that begin with the specified prefix" json:"prefix"`
-	BatchSize int      `short:"s" long:"batch-size" description:"Batch cluster size" default:"10" json:"batch_size"`
-}
-
-var opts ManifestOpts
+var opts common.ManifestOpts
 
 type ParsedRegexes []*regexp.Regexp
 
@@ -86,7 +81,7 @@ func main() {
 		panic(err)
 	}
 
-	resp := Jobs{Opts: opts}
+	resp := common.Jobs{Opts: opts}
 
 	// Only calculate the lines to fetch from manifest file
 	for i := 0; i < opts.BatchSize; i++ {
