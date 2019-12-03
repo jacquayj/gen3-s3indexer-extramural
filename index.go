@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -35,6 +36,7 @@ var (
 	INDEXD_USER     = os.Getenv("INDEXD_USER")
 	INDEXD_PASS     = os.Getenv("INDEXD_PASS")
 	INDEXD_UPLOADER = os.Getenv("INDEXD_UPLOADER")
+	FAST_MODE       = os.Getenv("FAST_MODE")
 )
 
 var indexS3ClientConfig = handlers.IndexdInfo{
@@ -44,6 +46,7 @@ var indexS3ClientConfig = handlers.IndexdInfo{
 	ExtramuralBucket:      true,
 	ExtramuralUploader:    &INDEXD_UPLOADER,
 	ExtramuralInitialMode: true,
+	ExtramuralFastMode:    strings.TrimSpace(strings.ToLower(FAST_MODE)) == "true",
 }
 
 func invokeIndexS3Client(objURL string) {
