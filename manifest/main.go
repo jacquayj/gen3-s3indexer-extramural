@@ -65,13 +65,14 @@ func main() {
 					for _, exp := range regexes {
 						if exp.Match([]byte(objKey)) {
 							fmt.Fprintln(mf, objKey)
+							resp.ObjCount++
 							break
 						}
 					}
 				} else {
 					fmt.Fprintln(mf, objKey)
+					resp.ObjCount++
 				}
-				resp.ObjCount++
 			}
 			return true
 		},
