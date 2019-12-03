@@ -22,11 +22,13 @@ var (
 	AWS_BUCKET            = os.Getenv("AWS_BUCKET")
 )
 
-var opts struct {
-	Regexs    []string `short:"r" description:"Object keys must match this or be skipped"`
-	Prefix    *string  `short:"p" description:"Limits the response to keys that begin with the specified prefix"`
-	BatchSize int      `short:"s" description:"Batch cluster size" default:"10"`
+type ManifestOpts struct {
+	Regexs    []string `short:"r" long:"regex" description:"Object keys must match this or be skipped, multiple expressions can be specified" json:"regexs"`
+	Prefix    *string  `short:"p" long:"prefix" description:"Limits the response to keys that begin with the specified prefix" json:"prefix"`
+	BatchSize int      `short:"s" long:"batch-size" description:"Batch cluster size" default:"10" json:"batch_size"`
 }
+
+var opts ManifestOpts
 
 type ParsedRegexes []*regexp.Regexp
 
@@ -34,7 +36,10 @@ func main() {
 
 	_, err := flags.Parse(&opts)
 	if err != nil {
-		panic(err)
+		if !flags.WroteHelp(err) {
+			panic(err)
+		}
+		return
 	}
 
 	regexes := make(ParsedRegexes, len(opts.Regexs))
@@ -81,7 +86,7 @@ func main() {
 		panic(err)
 	}
 
-	resp := Jobs{}
+	resp := Jobs{Opts: opts}
 
 	// Only calculate the lines to fetch from manifest file
 	for i := 0; i < opts.BatchSize; i++ {

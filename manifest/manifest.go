@@ -20,6 +20,7 @@ type BatchRun struct {
 type Jobs struct {
 	BatchRuns    []BatchRun    `json:"jobs"`
 	RawBatchRuns []BatchRunRaw `json:"-"`
+	Opts         ManifestOpts  `json:"opts"`
 }
 
 func lineCounter(r io.Reader) (int, error) {
