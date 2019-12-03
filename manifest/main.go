@@ -54,7 +54,7 @@ func main() {
 	}
 
 	bucket := AWS_BUCKET
-	s3Svc.ListObjectsV2Pages(
+	listErr := s3Svc.ListObjectsV2Pages(
 		&s3.ListObjectsV2Input{Bucket: &bucket, Prefix: opts.Prefix},
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, obj := range page.Contents {
@@ -73,6 +73,9 @@ func main() {
 			return true
 		},
 	)
+	if listErr != nil {
+		panic(err)
+	}
 
 	if err := mf.Close(); err != nil {
 		panic(err)
@@ -82,7 +85,7 @@ func main() {
 
 	// Only calculate the lines to fetch from manifest file
 	for i := 0; i < opts.BatchSize; i++ {
-		resp.RawBatchRuns = append(resp.RawBatchRuns, calculateStartEndKeys(i, opts.BatchSize))
+		resp.RawBatchRuns = append(resp.RawBatchRuns, calculateStartEndKeys(opts.BatchSize, i))
 	}
 
 	// Fetch the lines in one manifest loop
