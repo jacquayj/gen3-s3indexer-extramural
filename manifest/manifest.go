@@ -111,7 +111,7 @@ func resolveBatchRuns(resp *common.Jobs) {
 	// Set the start and end keys
 	resp.BatchRuns = make([]common.BatchRun, len(resp.RawBatchRuns))
 	for i, rbr := range resp.RawBatchRuns {
-		br := BatchRun{}
+		br := common.BatchRun{}
 
 		if rbr.StartKeyLine != nil {
 			br.StartKey = lineMap[*rbr.StartKeyLine]
@@ -125,7 +125,7 @@ func resolveBatchRuns(resp *common.Jobs) {
 
 }
 
-func calculateStartEndKeys(batchSize, batchIndex int) BatchRunRaw {
+func calculateStartEndKeys(batchSize, batchIndex int) common.BatchRunRaw {
 	if numTotalObjs == -1 {
 		if numTotalObj, err := getManifestNumLines(MANIFEST_FILE); err == nil {
 			numTotalObjs = numTotalObj
