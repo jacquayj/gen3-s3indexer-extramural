@@ -20,4 +20,5 @@ type Jobs struct {
 	BatchRuns    []BatchRun    `json:"jobs"`
 	RawBatchRuns []BatchRunRaw `json:"-"`
 	Opts         ManifestOpts  `json:"opts"`
+	ObjCount     int           `json:"obj_count"`
 }

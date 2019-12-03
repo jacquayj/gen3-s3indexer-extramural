@@ -37,6 +37,8 @@ func main() {
 		return
 	}
 
+	resp := common.Jobs{Opts: opts}
+
 	regexes := make(ParsedRegexes, len(opts.Regexs))
 	for i, rStr := range opts.Regexs {
 		regexes[i] = regexp.MustCompile(rStr)
@@ -69,6 +71,7 @@ func main() {
 				} else {
 					fmt.Fprintln(mf, objKey)
 				}
+				resp.ObjCount++
 			}
 			return true
 		},
@@ -80,8 +83,6 @@ func main() {
 	if err := mf.Close(); err != nil {
 		panic(err)
 	}
-
-	resp := common.Jobs{Opts: opts}
 
 	// Only calculate the lines to fetch from manifest file
 	for i := 0; i < opts.BatchSize; i++ {
