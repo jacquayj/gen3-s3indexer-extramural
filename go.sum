@@ -1,9 +1,9 @@
 github.com/aws/aws-sdk-go v1.25.43 h1:R5YqHQFIulYVfgRySz9hvBRTWBjudISa+r0C8XQ1ufg=
 github.com/aws/aws-sdk-go v1.25.43/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
-github.com/jacquayj/indexs3client v0.0.0-20191130141751-68bc59445cc1 h1:m2wN4386jMdxvii9e0LxvKftrIg0X+WgwII4ciKuZ14=
-github.com/jacquayj/indexs3client v0.0.0-20191130141751-68bc59445cc1/go.mod h1:RsKiK4g0ePv6Q96ugH37LaG0RlO40PY2RqpwQ2FUjJo=
-github.com/jacquayj/indexs3client v0.0.0-20191203193759-c36c525bce55 h1:LeEV8vnGzo7OgEV6RwhPZWQ2stPAmgsU9CUFQu24G5Q=
-github.com/jacquayj/indexs3client v0.0.0-20191203193759-c36c525bce55/go.mod h1:RsKiK4g0ePv6Q96ugH37LaG0RlO40PY2RqpwQ2FUjJo=
+github.com/aws/aws-sdk-go v1.25.47 h1:Y13LHLosjP35FPWae95teJC4eQH2YeKD0I0dVFZ4CUM=
+github.com/aws/aws-sdk-go v1.25.47/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/jacquayj/indexs3client v0.0.0-20191204212648-cfc16e948a83 h1:ujjoAkMP2NxjZ6vmA/OyVZUeVWsodMzWOndhtH7QAQ8=
+github.com/jacquayj/indexs3client v0.0.0-20191204212648-cfc16e948a83/go.mod h1:RsKiK4g0ePv6Q96ugH37LaG0RlO40PY2RqpwQ2FUjJo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jessevdk/go-flags v1.4.1-0.20181221193153-c0795c8afcf4 h1:xKkUL6QBojwguhKKetf1SocCAKqc6W7S/mGm9xEGllo=
 github.com/jessevdk/go-flags v1.4.1-0.20181221193153-c0795c8afcf4/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
