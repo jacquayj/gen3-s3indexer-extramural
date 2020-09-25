@@ -96,7 +96,7 @@ func main() {
 
 	bucket := AWS_BUCKET
 	svc.ListObjectsV2Pages(
-		&s3.ListObjectsV2Input{Bucket: &bucket, StartAfter: startEndKeys.StartKey},
+		&s3.ListObjectsV2Input{Bucket: &bucket, StartAfter: startEndKeys.StartKey, Prefix: batchJobs.Opts.Prefix},
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, obj := range page.Contents {
 
