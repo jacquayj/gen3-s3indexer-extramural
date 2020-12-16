@@ -5,7 +5,8 @@ go 1.13
 replace github.com/jacquayj/gen3-s3indexer-extramural/common => ./common
 
 require (
-	github.com/aws/aws-sdk-go v1.34.32
-	github.com/jacquayj/indexs3client v0.0.0-20200925195612-8be590d8e71c
+	github.com/aws/aws-sdk-go v1.36.9
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
+	github.com/jacquayj/indexs3client v0.0.0-20201216171332-9a20e5fead53
 	github.com/jessevdk/go-flags v1.4.1-0.20181221193153-c0795c8afcf4
 )
